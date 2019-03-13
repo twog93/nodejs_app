@@ -30,7 +30,7 @@ let mainWindow
 
 function createWindow () {
     // Create the browser window.
-    mainWindow = new BrowserWindow({width: 800, height: 600, frame :false, icon:`${__dirname}/views/icons/png/app.png`})
+    mainWindow = new BrowserWindow({width: 800, height: 600, frame :false, nodeIntegration :true,icon:`${__dirname}/views/icons/png/app.png`})
     // and load the index.html of the app.
     mainWindow.loadURL(`file://${__dirname}/views/index.html`)
     // Send data to todolist.js

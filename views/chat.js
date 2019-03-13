@@ -5,6 +5,7 @@ const {ipcRenderer} = require('electron')
 const entities = new Entities()
 let message
 let currentUser
+
 const { ChatManager, TokenProvider } = require('@pusher/chatkit')
 
 const chatManager = new ChatManager({
@@ -15,6 +16,15 @@ const chatManager = new ChatManager({
     })
 })
 
+chatManager.connect().then(cUser => {
+    currentUser = cUser
+    window.currentUser = cUser
+
+}).catch(err => {
+    console.log(`Error fetching messages: ${err}`)
+})
+
+
 chatManager
     .connect()
     .then(cUser => {
@@ -23,7 +33,7 @@ chatManager
 
         currentUser.fetchMessages({
             roomId: 19875528,
-            limit: 10,
+            limit: 20,
         })
             .then(messages => {
                 messages.forEach(function (e) {
@@ -44,32 +54,46 @@ chatManager
         console.log('Error on connection', err)
     })
 
-chatManager.connect()
-    .then(currentUser =>{
-        currentUser.sendSimpleMessage({
-            text: "ca marche",
-            roomId: "19875528"
-        });
-    })
-    .then(res => console.log('sent message with id', res.id))
-    .catch(err => console.error(err))
 
-document.querySelector('#submitMessage').addEventListener('click', function() {
+console.log(currentUser)
+/*
+chatManager
+    .connect()
+    .then(currentUser => {
+
+        return currentUser.subscribeToRoom({
+        roomId: currentUser.rooms[0].id,
+        hooks: {
+            onMessage: message => {
+                listMessages.push(message)
+                console.log("received message", message)
+            }
+        },
+        messageLimit: 0
+    })})
+*/
 
 
+
+
+document.querySelector('#submitMessage').addEventListener('click', function(e) {
+
+    e.preventDefault()
     message = entities.decode(document.getElementById("message").value);
 
     if(message) {
-        chatManager.connect()
-            .then(currentUser =>{
-                currentUser.sendSimpleMessage({
-                    text: message,
-                    roomId: "19875528"
-                });
-            })
-            .then(res => console.log('sent message with id', res.id))
-            .catch(err => console.error(err))
+        currentUser.sendMessage({
+            text: message,
+            roomId: currentUser.rooms[0].id
+        });
+        let node = document.createElement("li")
+        node.setAttribute("class", "messages")
+        let textnode = document.createTextNode(message);
+        node.appendChild(textnode)
+        document.getElementById("list-message").appendChild(node)
+        document.getElementById('message').value  = ''
     }
+
     else{
 
         alert(console.error())
@@ -77,6 +101,10 @@ document.querySelector('#submitMessage').addEventListener('click', function() {
 
 
 })
+
+
+
+
 
 document.querySelector('#submit').addEventListener('click', function() {
 
